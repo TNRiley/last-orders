@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Last Orders</title>
+<meta name="description" content="Every named pub in Great Britain, measured against the railways and canals around it - the live ones and the dead ones. Pub names are a small compositional language, and a railway name turns out to mark a line that is no longer there.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ------------------------------------------------------------------ *
+ * A painted signboard: cream board, oxblood and brass, one deep       *
+ * railway green. Green is a line that still carries trains, oxblood   *
+ * is a line that does not, and oxblood is also every finding.         *
+ * ------------------------------------------------------------------ */
+:root{
+  --paper:#f4f1e8;
+  --panel:#fffefa;
+  --sunk:#e8e3d4;
+  --ink:#15140f;
+  --ink2:#55513f;
+  --ink3:#8d8872;
+  --rule:#d3cdba;
+  --rule2:#e6e1d2;
+  --live:#2f5d50;        /* a line trains still run on */
+  --dead:#9c2b1f;        /* a line that is gone, and every finding */
+  --gold:#a8812a;        /* canals, and brass fittings */
+  --dot:#6f6a57;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --paper:#13130f;
+  --panel:#1b1a15;
+  --sunk:#0c0c09;
+  --ink:#ece8dc;
+  --ink2:#a39d8a;
+  --ink3:#6e6959;
+  --rule:#312f28;
+  --rule2:#23221c;
+  --live:#5aa08b;
+  --dead:#e4714f;
+  --gold:#d2a955;
+  --dot:#8a8571;
+}}
+:root[data-theme="dark"]{
+  --paper:#13130f; --panel:#1b1a15; --sunk:#0c0c09;
+  --ink:#ece8dc; --ink2:#a39d8a; --ink3:#6e6959;
+  --rule:#312f28; --rule2:#23221c;
+  --live:#5aa08b; --dead:#e4714f; --gold:#d2a955; --dot:#8a8571;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:400 16.5px/1.62 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums lining-nums;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+@media(min-width:700px){.wrap{padding:0 30px}}
+h1,h2,h3{margin:0;font-family:"Playfair Display",Georgia,serif;line-height:1.03;text-wrap:balance}
+h1{font-size:clamp(3.2rem,13vw,8rem);font-weight:900;letter-spacing:-.025em}
+h2{font-size:clamp(1.7rem,5vw,2.9rem);font-weight:700;letter-spacing:-.015em}
+h3{font-family:"IBM Plex Sans",sans-serif;font-size:1.04rem;font-weight:600;letter-spacing:-.005em}
+p{margin:0 0 1.05em;max-width:66ch}
+a{color:var(--dead)}
+:focus-visible{outline:2px solid var(--dead);outline-offset:2px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink3);margin:0 0 20px}
+.num{font-family:"IBM Plex Mono",monospace;font-weight:600}
+b{font-weight:600;color:var(--ink)}
+.mk{color:var(--dead)}
+.lv{color:var(--live)}
+
+/* ---- masthead ---- */
+header.mast{padding-top:54px}
+.sign{display:inline-block;border:2px solid var(--ink);padding:3px 11px 5px;
+  font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink);margin-bottom:26px}
+.dek{font-size:19.5px;color:var(--ink2);max-width:63ch;margin-top:24px}
+.dek b{color:var(--ink);font-weight:600}
+.strip{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:42px 0 0}
+@media(min-width:880px){.strip{grid-template-columns:repeat(4,1fr)}}
+.strip>div{background:var(--paper);padding:17px 18px 19px}
+.strip .v{font-family:"Playfair Display",serif;font-size:34px;font-weight:700;
+  letter-spacing:-.02em;line-height:1.02}
+.strip .k{font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.42;max-width:34ch}
+
+section{margin-top:84px}
+.sechead{border-top:2px solid var(--ink);padding-top:14px}
+.sublede{color:var(--ink2);max-width:70ch;margin-top:12px}
+.note{font-size:13.5px;color:var(--ink2);border-left:2px solid var(--rule);
+  padding-left:13px;max-width:78ch;margin-top:18px}
+.note.warn{border-left-color:var(--dead)}
+.cols{display:grid;gap:24px}
+@media(min-width:900px){.cols{grid-template-columns:1fr 1fr}}
+
+/* ---- the colour x animal grid ---- */
+.gridwrap{margin-top:26px;overflow-x:auto;border:1px solid var(--rule);background:var(--panel)}
+table.grid{border-collapse:collapse;font-size:12.5px;min-width:620px}
+table.grid th{font-weight:500;color:var(--ink2);text-align:left;padding:6px 7px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.04em;
+  text-transform:uppercase;white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+table.grid th.rowh{text-transform:none;letter-spacing:0;font-size:12px;
+  position:sticky;left:0;background:var(--panel);z-index:1;border-right:1px solid var(--rule2)}
+table.grid td{padding:0;border:1px solid var(--rule2);width:46px;height:30px;
+  text-align:center;vertical-align:middle}
+table.grid td button{appearance:none;border:0;background:transparent;width:100%;height:30px;
+  font:600 12px/1 "IBM Plex Mono",monospace;color:var(--ink);cursor:pointer}
+table.grid td.on{outline:2px solid var(--dead);outline-offset:-2px}
+table.grid td.zero button{color:var(--ink3);cursor:default;font-weight:400}
+
+/* ---- ranked lists ---- */
+.rank{border:1px solid var(--rule);background:var(--panel);margin-top:18px}
+.rank .row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:7px 12px;
+  border-top:1px solid var(--rule2);font-size:14px;align-items:baseline}
+.rank .row:first-child{border-top:0}
+.rank .row.head{background:var(--sunk);font:600 11px/1.4 "IBM Plex Mono",monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.rank .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:capitalize}
+.rank .ct{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--ink2)}
+.rank .bar{grid-column:1/-1;height:2px;background:var(--dead);opacity:.5;margin-top:-4px}
+
+/* ---- the map ---- */
+.mapshell{margin-top:26px;display:grid;gap:16px}
+@media(min-width:960px){.mapshell{grid-template-columns:minmax(0,1fr) 304px;align-items:start}}
+.mapbox{position:relative;border:1px solid var(--rule);background:var(--panel);overflow:hidden}
+.mapbox canvas{display:block;width:100%;height:auto;cursor:crosshair;touch-action:none}
+.maphint{position:absolute;left:10px;bottom:9px;font:500 11px/1 "IBM Plex Mono",monospace;
+  color:var(--ink3);background:color-mix(in srgb,var(--panel) 82%,transparent);padding:4px 7px;
+  pointer-events:none}
+.panel{border:1px solid var(--rule);background:var(--panel)}
+.panel .ph{background:var(--sunk);padding:8px 12px;font:600 11px/1.4 "IBM Plex Mono",monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.panel .pb{padding:12px}
+.ctl{display:grid;gap:9px}
+.ctl label{font-size:12.5px;color:var(--ink2);display:flex;gap:8px;align-items:center;cursor:pointer}
+.ctl input[type=checkbox]{accent-color:var(--dead)}
+.ctl select,.ctl input[type=search]{width:100%;font:inherit;font-size:14px;padding:8px 10px;
+  border:1px solid var(--rule);background:var(--panel);color:var(--ink);border-radius:2px}
+.swatch{width:22px;height:0;border-top-width:3px;border-top-style:solid;flex:0 0 22px}
+.readout div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;
+  font-size:13px;border-top:1px solid var(--rule2)}
+.readout div:first-child{border-top:0}
+.readout .rk{color:var(--ink2)}
+.readout .rv{font-family:"IBM Plex Mono",monospace;font-weight:600;text-align:right}
+.slots{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 10px}
+.slot{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--rule);padding:4px 6px;color:var(--ink2);background:var(--sunk)}
+.slot.hit{border-color:var(--dead);color:var(--dead)}
+.closeup{display:block;width:100%;height:auto;border:1px solid var(--rule2);margin-top:4px}
+.pubname{font-family:"Playfair Display",serif;font-size:21px;font-weight:700;line-height:1.15;
+  margin:0 0 2px}
+
+/* ---- the finding ---- */
+.dumb{margin-top:24px;border:1px solid var(--rule);background:var(--panel);padding:16px 14px 10px}
+.dumb svg{display:block;width:100%;height:auto}
+.dumb .lbl{font:500 12px/1 "IBM Plex Mono",monospace;fill:var(--ink2)}
+.dumb .val{font:600 12px/1 "IBM Plex Mono",monospace;fill:var(--ink)}
+.dumb .track{stroke:var(--rule2);stroke-width:9}
+.dumb .span{stroke:var(--dead);stroke-width:9;opacity:.28}
+.dumb .ctrl{fill:var(--ink3)}
+.dumb .name{fill:var(--dead)}
+.cdf{margin-top:20px;border:1px solid var(--rule);background:var(--panel);padding:14px}
+.cdf svg{display:block;width:100%;height:auto}
+.cdf .ax{stroke:var(--rule);stroke-width:1}
+.cdf .gl{stroke:var(--rule2);stroke-width:1}
+.cdf .tk{font:500 11px/1 "IBM Plex Mono",monospace;fill:var(--ink3)}
+.cdf path.c1{fill:none;stroke:var(--dead);stroke-width:2.5}
+.cdf path.c2{fill:none;stroke:var(--ink3);stroke-width:2;stroke-dasharray:5 4}
+.cdf path.c3{fill:none;stroke:var(--live);stroke-width:2}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12.5px;color:var(--ink2)}
+.legend span{display:flex;gap:7px;align-items:center}
+.legend i{width:20px;height:0;border-top-width:3px;border-top-style:solid;display:block}
+.verdict{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:26px}
+@media(min-width:760px){.verdict{grid-template-columns:repeat(3,1fr)}}
+.verdict>div{background:var(--panel);padding:15px 16px 17px}
+.verdict .vh{font:600 11px/1.4 "IBM Plex Mono",monospace;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
+.verdict .vv{font-family:"Playfair Display",serif;font-size:30px;font-weight:700;line-height:1.05}
+.verdict .vd{font-size:13px;color:var(--ink2);margin-top:7px}
+.verdict.fail .vv{color:var(--live)}
+.verdict.pass .vv{color:var(--dead)}
+
+table.plain{border-collapse:collapse;width:100%;font-size:14px;margin-top:18px}
+table.plain th,table.plain td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule2)}
+table.plain th{font:600 11px/1.4 "IBM Plex Mono",monospace;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink2);border-bottom:1px solid var(--rule)}
+table.plain td.n{font-family:"IBM Plex Mono",monospace;font-weight:600;text-align:right}
+
+footer{margin:96px 0 70px;border-top:1px solid var(--rule);padding-top:22px;
+  font-size:13.5px;color:var(--ink2)}
+footer p{max-width:76ch}
+.loading{padding:60px 0;color:var(--ink3);font-family:"IBM Plex Mono",monospace;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="sign">Free house</div>
+  <h1>Last&nbsp;Orders</h1>
+  <p class="dek">
+    A British pub name is rarely an invention. It is assembled, from a short vocabulary of
+    colours, animals, trades and infrastructure, and it is stubborn: the sign outlives the
+    thing it was named after. This takes every named pub in Great Britain
+    (<span data-stat="pubs_total" class="num"></span> of them, from OpenStreetMap), pulls each
+    name apart into its slots, and then measures every one against the railways and canals on
+    the ground around it - the lines that still carry traffic, and the lines that do not.
+    <b id="headline">Where the trains have gone, the railway names stayed: of the
+    <span data-stat="far_pairs" class="num"></span> railway-named pubs more than a kilometre
+    from any working line, <span data-stat="far_closer" class="num"></span> stand nearer the
+    lifted trackbed than the pub next door.</b> The same test on the Red Lions and White Harts
+    finds nothing.
+  </p>
+  <p class="note warn" id="withheld" style="display:none"></p>
+
+  <div class="strip">
+    <div><div class="v" data-stat="pubs_total"></div>
+         <div class="k">named pubs in Great Britain, each placed to within a few metres</div></div>
+    <div><div class="v" data-stat="distinct_names"></div>
+         <div class="k">distinct names once the article, the apostrophe and the word Inn are
+         taken off</div></div>
+    <div><div class="v" data-stat="template_share"></div>
+         <div class="k">follow one of four templates: colour plus animal, trade plus Arms, a
+         number plus a thing, or A and B</div></div>
+    <div><div class="v mk" data-stat="rail_lift_x"></div>
+         <div class="k">more likely a site is railway-named, if it is far from a live line but
+         beside a dead one</div></div>
+  </div>
+</header>
+
+<section id="grammar">
+  <div class="sechead"><p class="kicker">One &middot; the grammar of the sign</p>
+  <h2>Two slots and a vocabulary</h2></div>
+  <p class="sublede">
+    Most pub names fit a template. The largest is a colour followed by an animal, which accounts
+    for <span data-stat="ca_total" class="num"></span> pubs across
+    <span data-stat="ca_cells" class="num"></span> different combinations - and the grid is
+    mostly empty, because the vocabulary is heraldic rather than descriptive. There are Red
+    Lions everywhere and almost no Red Lambs. Click a cell to pick those pubs out on the map
+    below.
+  </p>
+
+  <div class="gridwrap"><table class="grid" id="cagrid"></table></div>
+  <p class="note">
+    Counts are of pubs whose name <em>begins</em> with the colour and animal, so The Red Lion
+    counts and The Lion and Lamb does not. Colours and animals are hand-listed in
+    <span class="mono">src/names.py</span>; anything outside those lists falls through, and the
+    unclassified share is reported in the table at the foot of this section.
+  </p>
+
+  <div class="cols">
+    <div>
+      <h3>Somebody&rsquo;s trade, somebody&rsquo;s arms</h3>
+      <p class="sublede"><span data-stat="arms_total" class="num"></span> pubs end in
+      <em>Arms</em>. Of those, <span data-stat="arms_trade" class="num"></span> borrow the arms
+      of a trade rather than a family or a regiment - which is to say the sign is a record of
+      what the people in that street did for a living.</p>
+      <div class="rank" id="armsrank"></div>
+    </div>
+    <div>
+      <h3>A and B</h3>
+      <p class="sublede">The other productive template pairs two signs, usually because two
+      houses merged or a landlord wanted the arms of two patrons. The pairs are not random:
+      the second slot is nearly always the senior one.</p>
+      <div class="rank" id="pairrank"></div>
+    </div>
+  </div>
+
+  <table class="plain" id="tmpltable"></table>
+</section>
+
+<section id="map">
+  <div class="sechead"><p class="kicker">Two &middot; the whole board</p>
+  <h2>Every pub, and every line</h2></div>
+  <p class="sublede">
+    Britain drawn in pubs. There is no coastline in this picture and no basemap of any kind -
+    the shape is <span data-stat="pubs_total" class="num"></span> dots, one per pub, and the
+    lines behind them are railways and canals out of the same OpenStreetMap extract, in
+    <span class="lv">green where trains still run</span> and <span class="mk">oxblood where the
+    line has been lifted</span>. Drag to pan, scroll to zoom, click a pub to read its sign.
+  </p>
+
+  <div class="mapshell">
+    <div class="mapbox">
+      <canvas id="cv" width="1680" height="2000"></canvas>
+      <div class="maphint" id="hint">drag to pan &middot; scroll to zoom</div>
+    </div>
+    <div style="display:grid;gap:16px">
+      <div class="panel">
+        <div class="ph">Show</div>
+        <div class="pb ctl">
+          <input type="search" id="q" placeholder="Search a pub name&hellip;" aria-label="Search pub names">
+          <select id="colourby" aria-label="Colour the pubs by">
+            <option value="family">colour by what the name remembers</option>
+            <option value="deadrail">colour by distance to a dead railway</option>
+            <option value="template">colour by template</option>
+            <option value="state">colour by open or former</option>
+          </select>
+          <label><input type="checkbox" id="lRailOpen" checked>
+            <i class="swatch" style="border-top-color:var(--live)"></i> railway, open</label>
+          <label><input type="checkbox" id="lRailDead" checked>
+            <i class="swatch" style="border-top-color:var(--dead)"></i> railway, dismantled</label>
+          <label><input type="checkbox" id="lCanal">
+            <i class="swatch" style="border-top-color:var(--gold)"></i> canals</label>
+          <label><input type="checkbox" id="lFormer"> include former pubs
+            (<span data-stat="pubs_former" class="num"></span>)</label>
+          <button type="button" id="reset" style="appearance:none;border:1px solid var(--rule);
+            background:var(--sunk);color:var(--ink2);font:600 11px/1 'IBM Plex Mono',monospace;
+            letter-spacing:.12em;text-transform:uppercase;padding:9px;cursor:pointer">reset view</button>
+        </div>
+      </div>
+      <div class="panel" id="detail">
+        <div class="ph">The sign</div>
+        <div class="pb">
+          <p class="pubname" id="dName">Click a pub</p>
+          <div class="slots" id="dSlots"></div>
+          <canvas class="closeup" id="cu" width="600" height="400"></canvas>
+          <div class="readout" id="dRead"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="finding">
+  <div class="sechead"><p class="kicker">Three &middot; what the name remembers</p>
+  <h2>The sign outlives the line</h2></div>
+  <p class="sublede">
+    <span data-stat="rail_named" class="num"></span> pubs carry a railway name - Railway,
+    Station, Junction, Locomotive, Signal Box, the Great Western. Britain lifted roughly a
+    third of its network in the twenty years after 1955, so the question is whether those
+    names now sit by lines that are gone. The difficulty is that railways and pubs are both
+    urban: in a town, a dismantled line is near everything, and a working station is ringed by
+    lifted sidings. Three measures are reported. The first two were the original plan, and the
+    check meant to validate the second one failed; the third was built to get round that, and
+    it carries a placebo of its own.
+  </p>
+
+  <div class="verdict pass" id="v1"></div>
+  <p class="note">
+    <b>Measure one, and its weakness.</b> Take the sites that are more than a kilometre from
+    any working line but within 250 metres of a dismantled one, and ask what share of the pubs
+    there are railway-named. It is a large lift, and it is also exactly the number a sceptic
+    should distrust: those sites are disproportionately in old industrial districts, where
+    both dismantled lines and railway pubs are common for reasons that have nothing to do with
+    each other.
+  </p>
+
+  <div class="dumb"><svg id="dumbsvg" viewBox="0 0 760 258" role="img"
+    aria-label="Median distance to the nearest dismantled railway, railway-named pubs against their nearest neighbour"></svg></div>
+  <p class="note warn">
+    <b>Measure two, paired with the pub next door.</b> Every railway-named pub is paired with the
+    nearest <em>other</em> pub - a median of
+    <span data-stat="pair_sep" class="num"></span> metres away, the same street in most cases -
+    and the two are compared on how far they sit from the nearest dismantled line. The control
+    is in the same town, the same decade of building, the same industrial history. Whatever
+    urbanity does to the measurement, it does to both of them.
+  </p>
+
+  <div class="verdict" id="v2"></div>
+
+  <div class="cdf">
+    <svg id="cdfsvg" viewBox="0 0 760 330" role="img"
+      aria-label="Share of pubs within a given distance of the nearest dismantled railway"></svg>
+    <div class="legend">
+      <span><i style="border-top-color:var(--dead)"></i> railway-named pubs</span>
+      <span><i style="border-top-color:var(--ink3);border-top-style:dashed"></i> their nearest neighbours</span>
+      <span><i style="border-top-color:var(--live)"></i> all other pubs</span>
+    </div>
+  </div>
+
+  <h3 style="margin-top:46px">The check that did not fail</h3>
+  <p class="sublede">
+    The plan was to run the same paired test against lines that are <em>still open</em>, expecting
+    no gap: if the railway pubs were no nearer working lines than their neighbours, the dead-line
+    gap would have to be memory. The gap against working lines is <b>larger</b>. Of course it is:
+    a Station Hotel stands by a station, and most stations still have trains. So measure two
+    cannot tell memory from proximity to a working railway, whose old sidings and goods yards
+    are themselves mapped as dismantled track. It is kept here as the check that did not do its
+    job.
+  </p>
+  <div class="verdict" id="v3"></div>
+
+  <h3 style="margin-top:46px">Measure three: where the trains have gone</h3>
+  <p class="sublede">
+    So take the working railways out of the picture. Keep only pubs more than a kilometre from
+    any line that is still open (<span data-stat="far_pubs" class="num"></span> of them), and pair
+    every railway-named pub among them with its nearest neighbour that is <em>also</em> that far
+    from a working line. There is no live station nearby to stand beside and no working yard
+    shedding mapped sidings. If the railway pub still sits by the old trackbed, the name has
+    outlived the line.
+  </p>
+  <div class="verdict pass" id="v4"></div>
+  <p class="note">
+    <b>Two checks on measure three.</b> The vocabulary is a judgement, so the test is re-run on
+    only the two words nobody uses for anything else, <em>Railway</em> and <em>Station</em>. And
+    as a placebo it is run on the heraldic signs, colour plus animal, which have no reason to sit
+    by a railway: if pairing far from the working lines produced a gap by itself, the Red Lions
+    would show one too.
+  </p>
+  <div class="verdict" id="v5"></div>
+
+  <h3 style="margin-top:46px">And the canals</h3>
+  <p class="sublede" id="canaltext"></p>
+</section>
+
+<section id="method">
+  <div class="sechead"><p class="kicker">Four &middot; method</p>
+  <h2>What this can and cannot say</h2></div>
+  <div class="cols">
+    <div>
+      <p><b>The data is OpenStreetMap, which is volunteered.</b> A pub is here because somebody
+      mapped it, and Britain is mapped unusually well, but coverage is not uniform and the
+      count will not match the licensing statistics. Names are as mapped, including the
+      occasional chain suffix and the occasional misspelling.</p>
+      <p><b>Distance is to the nearest line, not along a road.</b> Lines are densified to a
+      vertex every 40 metres and the nearest vertex is taken, so a quoted distance is within
+      about 20 metres of the true perpendicular distance.</p>
+      <p><b>&ldquo;Dismantled&rdquo; is OSM&rsquo;s word, not a historical record.</b> It covers
+      <span class="mono">railway=abandoned|dismantled|razed|disused</span> and the
+      <span class="mono">disused:railway=*</span> lifecycle spellings. Mapping of old
+      trackbeds is enthusiastic and good but not complete, which biases the finding
+      <em>against</em> itself: a trackbed nobody has mapped makes a railway pub look further
+      from a dead line than it is.</p>
+    </div>
+    <div>
+      <p><b>The vocabulary is a judgement.</b> Colours, animals, trades and the
+      infrastructure word lists are hand-written in <span class="mono">src/names.py</span>.
+      They are deliberately narrow: a name matches a template or it falls through, and the
+      fall-through share is published rather than tuned away.</p>
+      <p><b>Pubs mapped twice are merged.</b> The same house often appears as both a point and
+      a building outline; where two records within 60 metres share a canonical name, one is
+      dropped (<span data-stat="dupes" class="num"></span> merged).</p>
+      <p><b>Nothing is fetched while you read this</b>, except the visit count in the bar at
+      the top. The whole dataset is compressed into the page.</p>
+      <p><b>What failed.</b> The live-line check above, which was meant to validate measure two and
+      instead showed the same pull towards working lines, more strongly. The word
+      <em>Mallard</em>, in the railway list for the A4 locomotive until the names were read and
+      nearly every Mallard turned out to be the duck; <em>Grand Junction</em>, which is a canal.
+      And the canal test, which comes out null: too few disused canals are mapped to measure
+      against.</p>
+      <p><b>The paired test is a sign test</b>, not a model. It asks only which of the two pubs
+      in each pair is closer to a dead line, which is why it needs no assumption about how
+      distances are distributed.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p><b>Last Orders.</b> Pubs, railways and canals from OpenStreetMap, via the Geofabrik
+  Great Britain extract, read <span data-stat="built"></span>. OpenStreetMap data is
+  &copy; OpenStreetMap contributors, available under the Open Database Licence. The
+  name parsing, the measurements and this page are MIT. Built as a Quick Project; the
+  pipeline is in <span class="mono">src/</span>.</p>
+</footer>
+
+</div>
+
+<script id="payload" type="application/octet-stream">__PAYLOAD__</script>
+<script>
+(async function(){
+"use strict";
+
+/* ---------------------------------------------------------------- payload */
+const b64 = document.getElementById("payload").textContent.trim();
+function b64bytes(s){
+  const bin = atob(s), out = new Uint8Array(bin.length);
+  for (let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function inflate(bytes){
+  const ds = new DecompressionStream("gzip");
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+const DATA = JSON.parse(new TextDecoder().decode(await inflate(b64bytes(b64))));
+const S = DATA.stats, P = DATA.pubs, NAMES = DATA.names;
+/* measure three, recomputed here from the shipped pairs and distances */
+function signTest(pairs){
+  const a = pairs.named_idx.map(i => P.d_rail_closed[i]), b = pairs.control_idx.map(i => P.d_rail_closed[i]);
+  let closer = 0, further = 0, na = 0, nb = 0;
+  for (let k = 0; k < a.length; k++){
+    if (a[k] < b[k]) closer++; else if (a[k] > b[k]) further++;
+    if (a[k] < 250) na++; if (b[k] < 250) nb++;
+  }
+  const med = v => { const s = v.slice().sort((x,y)=>x-y), m = s.length>>1; return s.length%2 ? s[m] : (s[m-1]+s[m])/2; };
+  const n = closer + further;
+  return {n: a.length, closer, further, z: n ? (closer - n/2)/Math.sqrt(n/4) : NaN,
+          ma: med(a), mb: med(b), na: na/a.length, nb: nb/a.length};
+}
+const FAR = signTest(S.rail_paired_far), CORE = signTest(S.rail_core_paired_far), PLAC = signTest(S.heraldic_paired_far);
+const HEADLINE_OK = FAR.z >= 3 && CORE.z >= 3 && Math.abs(PLAC.z) < 2;
+const N = P.lat.length;
+
+/* ---------------------------------------------------------------- helpers */
+const fmt = n => n.toLocaleString("en-GB");
+const pct = (x,d=1) => (100*x).toFixed(d) + "%";
+const metres = m => m >= 20000 ? "20 km+" : m >= 1000 ? (m/1000).toFixed(m<10000?2:1)+" km" : Math.round(m)+" m";
+const titlecase = s => s.replace(/\b[a-z]/g, c => c.toUpperCase());
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* canvas fillStyle will not take color-mix(), so mixing happens here instead */
+function hex2rgb(h){
+  h = h.replace("#","");
+  if (h.length === 3) h = h.split("").map(c=>c+c).join("");
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+function mix(a, b, t){
+  const A = hex2rgb(a), B = hex2rgb(b);
+  return "rgb(" + A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",") + ")";
+}
+
+/* decode a Google-encoded polyline into a flat [lat,lon,...] Float32Array */
+function decodePoly(str){
+  const out = [];
+  let i=0, lat=0, lon=0;
+  while (i < str.length){
+    let shift=0, result=0, b;
+    do { b = str.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+    shift = 0; result = 0;
+    do { b = str.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lon += (result & 1) ? ~(result >> 1) : (result >> 1);
+    out.push(lat/1e5, lon/1e5);
+  }
+  return Float32Array.from(out);
+}
+const GEOM = {};
+for (const set of ["map","near"]){
+  GEOM[set] = {};
+  for (const key in (DATA.geom[set]||{})) GEOM[set][key] = DATA.geom[set][key].map(decodePoly);
+}
+
+/* -------------------------------------------------------- fill the figures */
+const tmplCount = {};
+for (const t of P.template) tmplCount[t||""] = (tmplCount[t||""]||0) + 1;
+const templated = N - (tmplCount[""]||0);
+
+const stat = {
+  pubs_total: fmt(S.pubs_total),
+  pubs_former: fmt(S.pubs_former),
+  distinct_names: fmt(S.distinct_names),
+  template_share: pct(templated/N, 0),
+  rail_named: fmt(S.rail_named),
+  rail_lift_x: "x" + S.rail_lift.lift.toFixed(1),
+  ca_total: fmt(S.colour_animal_total),
+  ca_cells: fmt(S.colour_animal_cells),
+  arms_total: fmt(S.arms_total),
+  arms_trade: fmt(S.arms_named_trade),
+  pair_sep: fmt(Math.round(S.rail_paired.median_separation_m)),
+  far_pubs: fmt(S.rail_paired_far.pubs_far_from_live),
+  far_pairs: fmt(FAR.n),
+  far_closer: fmt(FAR.closer),
+  dupes: fmt(S.pubs_duplicates_merged),
+  built: DATA.built || ""
+};
+for (const el of document.querySelectorAll("[data-stat]")){
+  const v = stat[el.dataset.stat];
+  if (v !== undefined) el.textContent = v;
+}
+
+/* ------------------------------------------------- the colour x animal grid */
+const caTop = S.colour_animal_top;
+const colOrder = [], aniOrder = [];
+const cell = new Map();
+for (const [c,a,n] of caTop){
+  cell.set(c+"|"+a, n);
+  if (!colOrder.includes(c)) colOrder.push(c);
+  if (!aniOrder.includes(a)) aniOrder.push(a);
+}
+const colTot = c => colOrder.length && aniOrder.reduce((s,a)=>s+(cell.get(c+"|"+a)||0),0);
+colOrder.sort((x,y)=>colTot(y)-colTot(x));
+const aniTot = a => colOrder.reduce((s,c)=>s+(cell.get(c+"|"+a)||0),0);
+aniOrder.sort((x,y)=>aniTot(y)-aniTot(x));
+const colShow = colOrder.slice(0,9), aniShow = aniOrder.slice(0,12);
+const maxCell = Math.max(...caTop.map(r=>r[2]));
+
+(function buildGrid(){
+  const t = document.getElementById("cagrid");
+  let h = "<thead><tr><th class='rowh'></th>";
+  for (const a of aniShow) h += `<th>${a}</th>`;
+  h += "</tr></thead><tbody>";
+  for (const c of colShow){
+    h += `<tr><th class='rowh'>${titlecase(c)}</th>`;
+    for (const a of aniShow){
+      const n = cell.get(c+"|"+a)||0;
+      const k = n ? Math.pow(n/maxCell, 0.45) : 0;
+      h += `<td class="${n?"":"zero"}" data-c="${c}" data-a="${a}"
+        style="background:color-mix(in srgb, var(--dead) ${(k*72).toFixed(0)}%, var(--panel))">
+        <button type="button" ${n?"":"disabled"}
+          style="color:${k>0.62?"var(--panel)":"var(--ink)"}">${n||"·"}</button></td>`;
+    }
+    h += "</tr>";
+  }
+  t.innerHTML = h + "</tbody>";
+  t.addEventListener("click", e => {
+    const td = e.target.closest("td[data-c]");
+    if (!td || td.classList.contains("zero")) return;
+    for (const o of t.querySelectorAll("td.on")) o.classList.remove("on");
+    const already = filter.colour === td.dataset.c && filter.animal === td.dataset.a;
+    if (already){ filter.colour = filter.animal = null; }
+    else { filter.colour = td.dataset.c; filter.animal = td.dataset.a; td.classList.add("on"); }
+    document.getElementById("q").value = "";
+    filter.text = "";
+    draw();
+    document.getElementById("map").scrollIntoView({behavior:"smooth", block:"start"});
+  });
+})();
+
+function rankList(el, rows, total){
+  const max = rows.length ? rows[0][1] : 1;
+  let h = `<div class="row head"><div>name</div><div>pubs</div></div>`;
+  for (const [name,n] of rows){
+    h += `<div class="row"><div class="nm">${titlecase(name)}</div><div class="ct">${fmt(n)}</div>
+      <div class="bar" style="width:${(100*n/max).toFixed(1)}%"></div></div>`;
+  }
+  el.innerHTML = h;
+}
+rankList(document.getElementById("armsrank"), S.arms_top.slice(0,14));
+rankList(document.getElementById("pairrank"),
+  S.pairs_top.slice(0,14).map(r => [r[0]+" and "+r[1], r[2]]));
+
+(function templateTable(){
+  const rows = S.templates.slice().sort((a,b)=>b[1]-a[1]);
+  let h = "<thead><tr><th>template</th><th style='text-align:right'>pubs</th>" +
+          "<th style='text-align:right'>share</th><th>example</th></tr></thead><tbody>";
+  const label = {
+    "colour+animal":"colour + animal", "x+arms":"trade or family + Arms",
+    "number+object":"number + object", "a+and+b":"A and B", "unclassified":"no template matched"
+  };
+  const egIdx = {};
+  for (let i=0;i<N;i++){ const t=P.template[i]||"unclassified"; if (!(t in egIdx)) egIdx[t]=i; }
+  for (const [t,n] of rows){
+    const key = t || "unclassified";
+    h += `<tr><td>${label[key]||key}</td><td class="n">${fmt(n)}</td>
+      <td class="n">${pct(n/N,1)}</td><td style="color:var(--ink2)">${
+        egIdx[key]!==undefined ? P.display[egIdx[key]] : ""}</td></tr>`;
+  }
+  document.getElementById("tmpltable").innerHTML = h + "</tbody>";
+})();
+
+/* ------------------------------------------------------------ the verdicts */
+function verdict(el, cards, cls){
+  el.className = "verdict" + (cls?" "+cls:"");
+  el.innerHTML = cards.map(c =>
+    `<div><div class="vh">${c.h}</div><div class="vv">${c.v}</div><div class="vd">${c.d}</div></div>`
+  ).join("");
+}
+verdict(document.getElementById("v1"), [
+  {h:"base rate", v:pct(S.rail_lift.base_rate,2),
+   d:`of all ${fmt(S.pubs_total)} named pubs carry a railway name`},
+  {h:"at orphaned sites", v:pct(S.rail_lift.rate_at_orphan_sites,2),
+   d:`of the ${fmt(S.rail_lift.orphan_sites)} pubs more than 1 km from a live line but within 250 m of a dead one`},
+  {h:"lift", v:"&times;"+S.rail_lift.lift.toFixed(1),
+   d:"suggestive, but confounded by where dismantled lines happen to be"}
+], "pass");
+
+const RP = S.rail_paired, RL = S.rail_paired_live;
+verdict(document.getElementById("v2"), [
+  {h:"median distance to a dead line", v:metres(RP.named_median_m),
+   d:`for railway-named pubs, against ${metres(RP.control_median_m)} for the pub next door`},
+  {h:"pairs where the railway pub is closer", v:fmt(RP.named_closer),
+   d:`out of ${fmt(RP.named_closer+RP.control_closer)} decided pairs, i.e. ${pct(RP.named_closer/(RP.named_closer+RP.control_closer),1)}`},
+  {h:"sign test", v:(RP.sign_test_z>0?"+":"")+RP.sign_test_z.toFixed(1)+"σ",
+   d:"the two pubs in a pair are a few hundred metres apart, so the town, the era and the industry all cancel"}
+], "pass");
+verdict(document.getElementById("v3"), [
+  {h:"median distance to a LIVE line", v:metres(RL.named_median_m),
+   d:`for railway-named pubs, against ${metres(RL.control_median_m)} for the pub next door`},
+  {h:"pairs where the railway pub is closer", v:fmt(RL.named_closer),
+   d:`out of ${fmt(RL.named_closer+RL.control_closer)}, i.e. ${pct(RL.named_closer/(RL.named_closer+RL.control_closer),1)}`},
+  {h:"sign test", v:(RL.sign_test_z>0?"+":"")+RL.sign_test_z.toFixed(1)+"σ",
+   d:"larger than the dead-line gap, so measure two cannot separate memory from a working station"}
+], "fail");
+verdict(document.getElementById("v4"), [
+  {h:"median distance to a dead line", v:metres(FAR.ma),
+   d:`for the ${fmt(FAR.n)} railway-named pubs far from any working line, against ${metres(FAR.mb)} for the pub next door`},
+  {h:"pairs where the railway pub is closer", v:fmt(FAR.closer),
+   d:`out of ${fmt(FAR.closer+FAR.further)} decided pairs, i.e. ${pct(FAR.closer/(FAR.closer+FAR.further),1)}`},
+  {h:"within 250 m of a dead line", v:pct(FAR.na,0),
+   d:`of the railway pubs, against ${pct(FAR.nb,0)} of their neighbours (sign test ${(FAR.z>0?"+":"")+FAR.z.toFixed(1)}&sigma;)`}
+], HEADLINE_OK ? "pass" : "fail");
+verdict(document.getElementById("v5"), [
+  {h:"Railway and Station only", v:`${fmt(CORE.closer)} of ${fmt(CORE.closer+CORE.further)}`,
+   d:`pairs where the named pub is nearer the trackbed: ${metres(CORE.ma)} against ${metres(CORE.mb)} (${(CORE.z>0?"+":"")+CORE.z.toFixed(1)}&sigma;)`},
+  {h:"placebo: colour plus animal", v:`${fmt(PLAC.closer)} of ${fmt(PLAC.closer+PLAC.further)}`,
+   d:`pairs where the Red Lion or White Hart is nearer the trackbed: ${metres(PLAC.ma)} against ${metres(PLAC.mb)} (${(PLAC.z>0?"+":"")+PLAC.z.toFixed(1)}&sigma;)`},
+  {h:"verdict", v: HEADLINE_OK ? "holds" : "withheld",
+   d: HEADLINE_OK ? "the strict vocabulary keeps the effect and the placebo shows none" : "a check drifted, so the headline is not reported"}
+], HEADLINE_OK ? "pass" : "fail");
+if (!HEADLINE_OK){
+  document.getElementById("headline").style.display = "none";
+  const w = document.getElementById("withheld"); w.style.display = "block";
+  w.textContent = "Withheld: a check on measure three drifted (strict vocabulary or placebo), so the headline is not reported. See section three.";
+}
+
+(function canal(){
+  const el = document.getElementById("canaltext");
+  if (!S.canal_paired){ el.textContent =
+    "Too few disused canals are tagged as such in OpenStreetMap to run the same test."; return; }
+  const CP = S.canal_paired;
+  el.innerHTML = `The canal words (Navigation, Wharf, Lock, Barge, Boatman) were meant to get
+    the same test, and it comes out null. ${fmt(S.canal_named)} pubs carry one. Against their
+    nearest neighbours they sit a median of ${metres(CP.named_median_m)} from the nearest canal
+    that OpenStreetMap records as disused, and the neighbours ${metres(CP.control_median_m)}; the
+    canal-named pub is closer in ${fmt(CP.named_closer)} of
+    ${fmt(CP.named_closer+CP.control_closer)} decided pairs
+    (${(CP.sign_test_z>0?"+":"")+CP.sign_test_z.toFixed(1)}&sigma;), which is a coin toss. Those
+    distances are the giveaway: OpenStreetMap holds only ${fmt(S.canal_closed_ways||0)} disused
+    canal ways for all of Britain, so most pubs are nowhere near one that is mapped. This is a
+    null about the map, not about the names.`;
+})();
+
+/* ------------------------------------------------------- the paired dumbbell */
+(function dumbbell(){
+  const svg = document.getElementById("dumbsvg");
+  const rows = [
+    {k:"dismantled railway", a:RP.named_median_m, b:RP.control_median_m},
+    {k:"line still open",    a:RL.named_median_m, b:RL.control_median_m},
+    {k:"dead line, >1 km from live", a:FAR.ma, b:FAR.mb}
+  ];
+  const x0 = 186, x1 = 712, top = 44, gap = 62;
+  const max = Math.max(...rows.flatMap(r=>[r.a,r.b])) * 1.18;
+  const X = v => x0 + (x1-x0) * (v/max);
+  let h = `<text class="lbl" x="${x0}" y="22">median metres to the nearest &hellip;</text>`;
+  for (let t=0; t<=4; t++){
+    const v = max*t/4;
+    h += `<line x1="${X(v)}" y1="30" x2="${X(v)}" y2="${top+gap*rows.length-18}"
+      stroke="var(--rule2)"/><text class="lbl" x="${X(v)}" y="${top+gap*rows.length}"
+      text-anchor="middle">${Math.round(v)}</text>`;
+  }
+  rows.forEach((r,i) => {
+    const y = top + gap*i;
+    h += `<text class="lbl" x="0" y="${y+4}">${r.k}</text>`;
+    h += `<line class="span" x1="${X(r.a)}" y1="${y}" x2="${X(r.b)}" y2="${y}"/>`;
+    h += `<circle class="ctrl" cx="${X(r.b)}" cy="${y}" r="7"/>`;
+    h += `<circle class="name" cx="${X(r.a)}" cy="${y}" r="7"/>`;
+    const left = r.a < r.b;
+    h += `<text class="val" x="${X(r.a) + (left?-12:12)}" y="${y-13}"
+      text-anchor="${left?"end":"start"}" fill="var(--dead)">${Math.round(r.a)}</text>`;
+    h += `<text class="val" x="${X(r.b) + (left?12:-12)}" y="${y-13}"
+      text-anchor="${left?"start":"end"}" fill="var(--ink3)">${Math.round(r.b)}</text>`;
+  });
+  h += `<text class="lbl" x="${x0}" y="${top+gap*rows.length+22}">
+    <tspan fill="var(--dead)">&#9679;</tspan> railway-named pub
+    <tspan fill="var(--ink3)" dx="14">&#9679;</tspan> its nearest neighbour</text>`;
+  svg.innerHTML = h;
+})();
+
+/* ----------------------------------------------------------------- the CDF */
+(function cdf(){
+  const svg = document.getElementById("cdfsvg");
+  const L=52, R=18, T=18, B=46, W=760, H=330;
+  const XMAX = 2000;
+  const dead = P.d_rail_closed;
+  const railMask = i => P.remembers[i] === "rail";
+  // the paired controls are recomputed here only for drawing: nearest-neighbour indices
+  // are not shipped, so "their nearest neighbours" is approximated by the same control
+  // definition over the shipped arrays - see the note in REBUILD.md.
+  const sets = [
+    {cls:"c1", vals:[]}, {cls:"c2", vals:[]}, {cls:"c3", vals:[]}
+  ];
+  // same population as the paired analysis: every pub, open or former
+  for (let i=0;i<N;i++) (railMask(i) ? sets[0] : sets[2]).vals.push(dead[i]);
+  sets[1].vals = DATA.control_dead || [];
+  const X = v => L + (W-L-R) * Math.min(v,XMAX)/XMAX;
+  const Y = p => T + (H-T-B) * (1-p);
+  let h = "";
+  for (let t=0;t<=5;t++){
+    const p = t/5;
+    h += `<line class="gl" x1="${L}" y1="${Y(p)}" x2="${W-R}" y2="${Y(p)}"/>
+      <text class="tk" x="${L-8}" y="${Y(p)+4}" text-anchor="end">${(100*p).toFixed(0)}%</text>`;
+  }
+  for (let v=0;v<=XMAX;v+=500){
+    h += `<line class="gl" x1="${X(v)}" y1="${T}" x2="${X(v)}" y2="${H-B}"/>
+      <text class="tk" x="${X(v)}" y="${H-B+18}" text-anchor="middle">${v?v+" m":"0"}</text>`;
+  }
+  h += `<text class="tk" x="${(L+W-R)/2}" y="${H-B+38}" text-anchor="middle">
+    distance to the nearest dismantled railway</text>`;
+  for (const s of sets){
+    if (!s.vals.length) continue;
+    const v = Float64Array.from(s.vals); v.sort();
+    let d = "";
+    const steps = 160;
+    for (let k=0;k<=steps;k++){
+      const x = XMAX*k/steps;
+      let lo=0, hi=v.length;
+      while (lo<hi){ const m=(lo+hi)>>1; if (v[m]<=x) lo=m+1; else hi=m; }
+      d += (k?"L":"M") + X(x).toFixed(1) + " " + Y(lo/v.length).toFixed(1);
+    }
+    h += `<path class="${s.cls}" d="${d}"/>`;
+  }
+  h += `<line class="ax" x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}"/>
+        <line class="ax" x1="${L}" y1="${T}" x2="${L}" y2="${H-B}"/>`;
+  svg.innerHTML = h;
+})();
+
+/* ------------------------------------------------------------------ the map */
+const R_EARTH = 6371000;
+function proj(lat, lon){
+  const la = lat*Math.PI/180;
+  return [lon*Math.PI/180 * R_EARTH * Math.cos(la), la * R_EARTH];
+}
+const PX = new Float64Array(N), PY = new Float64Array(N);
+for (let i=0;i<N;i++){ const p = proj(P.lat[i], P.lon[i]); PX[i]=p[0]; PY[i]=p[1]; }
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const hint = document.getElementById("hint");
+const filter = {colour:null, animal:null, text:""};
+let view = null;
+
+function fitView(){
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  for (let i=0;i<N;i++){
+    if (PX[i]<x0)x0=PX[i]; if (PX[i]>x1)x1=PX[i];
+    if (PY[i]<y0)y0=PY[i]; if (PY[i]>y1)y1=PY[i];
+  }
+  const padx=(x1-x0)*0.03, pady=(y1-y0)*0.02;
+  x0-=padx;x1+=padx;y0-=pady;y1+=pady;
+  const sx = cv.width/(x1-x0), sy = cv.height/(y1-y0);
+  const s = Math.min(sx,sy);
+  view = {s, cx:(x0+x1)/2, cy:(y0+y1)/2, home:{s, cx:(x0+x1)/2, cy:(y0+y1)/2}};
+}
+const sx = x => cv.width/2 + (x - view.cx)*view.s;
+const sy = y => cv.height/2 - (y - view.cy)*view.s;
+
+function colourOf(i, mode){
+  if (mode === "family"){
+    const r = P.remembers[i];
+    if (r === "rail") return css("--dead");
+    if (r === "canal") return css("--gold");
+    if (r === "extraction") return css("--live");
+    return null;
+  }
+  if (mode === "deadrail"){
+    const d = P.d_rail_closed[i];
+    if (d < 150) return css("--dead");
+    if (d < 400) return mix(css("--dead"), css("--dot"), 0.45);
+    if (d < 1000) return css("--dot");
+    return null;
+  }
+  if (mode === "template"){
+    const t = P.template[i];
+    if (t === "colour+animal") return css("--dead");
+    if (t === "x+arms") return css("--gold");
+    if (t === "a+and+b") return css("--live");
+    if (t === "number+object") return css("--ink2");
+    return null;
+  }
+  if (mode === "state") return P.state[i] === 1 ? css("--dead") : null;
+  return null;
+}
+
+function matches(i){
+  if (P.state[i] === 1 && !document.getElementById("lFormer").checked) return false;
+  if (filter.colour && !(P.colour[i] === filter.colour && P.animal[i] === filter.animal)) return false;
+  if (filter.text && !P.display[i].toLowerCase().includes(filter.text)) return false;
+  return true;
+}
+
+let selected = -1;
+
+function drawLines(){
+  const show = {
+    "rail/open": document.getElementById("lRailOpen").checked,
+    "rail/closed": document.getElementById("lRailDead").checked,
+    "canal/open": document.getElementById("lCanal").checked,
+    "canal/closed": document.getElementById("lCanal").checked
+  };
+  const style = {
+    "rail/open": [css("--live"), 1.1, []],
+    "rail/closed": [css("--dead"), 1.2, [5,4]],
+    "canal/open": [css("--gold"), 1.0, []],
+    "canal/closed": [css("--gold"), 1.0, [4,4]]
+  };
+  for (const key in GEOM.map){
+    if (!show[key]) continue;
+    const [col, w, dash] = style[key];
+    ctx.strokeStyle = col; ctx.globalAlpha = 0.72;
+    ctx.lineWidth = w * Math.max(1, Math.min(2.6, view.s/view.home.s));
+    ctx.setLineDash(dash.map(d=>d*ctx.lineWidth));
+    ctx.beginPath();
+    for (const line of GEOM.map[key]){
+      for (let k=0;k<line.length;k+=2){
+        const p = proj(line[k], line[k+1]);
+        const X = sx(p[0]), Y = sy(p[1]);
+        if (k===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+      }
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function draw(){
+  if (!view) fitView();
+  ctx.fillStyle = css("--panel");
+  ctx.fillRect(0,0,cv.width,cv.height);
+  drawLines();
+
+  const mode = document.getElementById("colourby").value;
+  const zoom = view.s/view.home.s;
+  const r = Math.max(1.15, Math.min(5.2, 1.15*Math.pow(zoom,0.62)));
+  const base = css("--dot");
+  const buckets = new Map();
+  for (let i=0;i<N;i++){
+    if (!matches(i)) continue;
+    const c = colourOf(i, mode) || base;
+    let arr = buckets.get(c);
+    if (!arr){ arr = []; buckets.set(c, arr); }
+    arr.push(i);
+  }
+  // plain dots first, coloured ones on top so the finding is never buried
+  const keys = [...buckets.keys()].sort((a,b) => (a===base?-1:b===base?1:0));
+  for (const c of keys){
+    ctx.fillStyle = c;
+    ctx.globalAlpha = c === base ? 0.5 : 0.95;
+    ctx.beginPath();
+    for (const i of buckets.get(c)){
+      const X = sx(PX[i]), Y = sy(PY[i]);
+      if (X<-8||Y<-8||X>cv.width+8||Y>cv.height+8) continue;
+      ctx.moveTo(X+r, Y);
+      ctx.arc(X, Y, r, 0, 6.283185);
+    }
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  if (selected >= 0){
+    const X = sx(PX[selected]), Y = sy(PY[selected]);
+    ctx.strokeStyle = css("--ink"); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(X, Y, Math.max(7, r+5), 0, 6.283185); ctx.stroke();
+  }
+  const shown = [...buckets.values()].reduce((s,a)=>s+a.length,0);
+  hint.textContent = (filter.colour || filter.text)
+    ? `${fmt(shown)} pubs shown · drag to pan · scroll to zoom`
+    : "drag to pan · scroll to zoom";
+}
+
+/* ---- interaction ---- */
+let drag = null;
+function canvasPoint(ev){
+  const b = cv.getBoundingClientRect();
+  return [(ev.clientX-b.left) * cv.width/b.width, (ev.clientY-b.top) * cv.height/b.height];
+}
+cv.addEventListener("pointerdown", ev => {
+  cv.setPointerCapture(ev.pointerId);
+  drag = {p:canvasPoint(ev), cx:view.cx, cy:view.cy, moved:0};
+});
+cv.addEventListener("pointermove", ev => {
+  if (!drag) return;
+  const p = canvasPoint(ev);
+  const dx = p[0]-drag.p[0], dy = p[1]-drag.p[1];
+  drag.moved = Math.max(drag.moved, Math.hypot(dx,dy));
+  view.cx = drag.cx - dx/view.s;
+  view.cy = drag.cy + dy/view.s;
+  draw();
+});
+cv.addEventListener("pointerup", ev => {
+  const wasDrag = drag && drag.moved > 4;
+  drag = null;
+  if (!wasDrag) pick(canvasPoint(ev));
+});
+cv.addEventListener("wheel", ev => {
+  ev.preventDefault();
+  const p = canvasPoint(ev);
+  const wx = view.cx + (p[0]-cv.width/2)/view.s;
+  const wy = view.cy - (p[1]-cv.height/2)/view.s;
+  const k = Math.exp(-ev.deltaY * 0.0014);
+  view.s = Math.max(view.home.s*0.9, Math.min(view.home.s*420, view.s*k));
+  view.cx = wx - (p[0]-cv.width/2)/view.s;
+  view.cy = wy + (p[1]-cv.height/2)/view.s;
+  draw();
+}, {passive:false});
+
+function pick(p){
+  const wx = view.cx + (p[0]-cv.width/2)/view.s;
+  const wy = view.cy - (p[1]-cv.height/2)/view.s;
+  const tol = 14/view.s;
+  let best = -1, bestd = tol*tol;
+  for (let i=0;i<N;i++){
+    if (!matches(i)) continue;
+    const dx = PX[i]-wx, dy = PY[i]-wy, d = dx*dx+dy*dy;
+    if (d < bestd){ bestd = d; best = i; }
+  }
+  if (best >= 0){ selected = best; showDetail(best); draw(); }
+}
+
+function showDetail(i){
+  document.getElementById("dName").textContent = P.display[i];
+  const slots = [];
+  if (P.colour[i]) slots.push(["colour", P.colour[i]]);
+  if (P.animal[i]) slots.push(["animal", P.animal[i]]);
+  if (P.arms[i]) slots.push(["arms of", P.arms[i]]);
+  if (P.trade_group[i]) slots.push(["a trade in", P.trade_group[i]]);
+  if (P.template[i]) slots.push(["template", P.template[i].replace(/\+/g," + ")]);
+  if (P.remembers[i]) slots.push(["remembers", P.remembers[i]]);
+  if (P.state[i] === 1) slots.push(["status", "former pub"]);
+  document.getElementById("dSlots").innerHTML = slots.length
+    ? slots.map(([k,v]) => `<span class="slot${k==="remembers"?" hit":""}">${k}: ${v}</span>`).join("")
+    : `<span class="slot">no template matched</span>`;
+
+  const rows = [
+    ["nearest live railway", metres(P.d_rail_open[i])],
+    ["nearest dismantled railway", metres(P.d_rail_closed[i])]
+  ];
+  if (P.d_canal_open) rows.push(["nearest canal", metres(P.d_canal_open[i])]);
+  const same = [];
+  const canon = P.canon[i];
+  for (let j=0;j<N;j++) if (P.canon[j] === canon) same.push(j);
+  rows.push(["others with this name", fmt(same.length-1)]);
+  document.getElementById("dRead").innerHTML = rows.map(([k,v]) =>
+    `<div><span class="rk">${k}</span><span class="rv">${v}</span></div>`).join("");
+  drawCloseup(i);
+}
+
+function drawCloseup(i){
+  const c = document.getElementById("cu"), g = c.getContext("2d");
+  const span = 1500; // metres across
+  const cx = PX[i], cy = PY[i];
+  const s = c.width/(2*span);
+  const X = x => c.width/2 + (x-cx)*s, Y = y => c.height/2 - (y-cy)*s;
+  g.fillStyle = css("--panel"); g.fillRect(0,0,c.width,c.height);
+  const style = {
+    "rail/open":[css("--live"),2.4,[]], "rail/closed":[css("--dead"),2.6,[7,5]],
+    "canal/open":[css("--gold"),2,[]], "canal/closed":[css("--gold"),2,[6,5]]
+  };
+  for (const key in GEOM.near){
+    const [col,w,dash] = style[key] || [css("--dot"),1,[]];
+    g.strokeStyle = col; g.lineWidth = w; g.setLineDash(dash);
+    g.beginPath();
+    for (const line of GEOM.near[key]){
+      let started = false;
+      for (let k=0;k<line.length;k+=2){
+        const p = proj(line[k], line[k+1]);
+        if (Math.abs(p[0]-cx) > span*1.6 || Math.abs(p[1]-cy) > span*1.6){ started = false; continue; }
+        const px = X(p[0]), py = Y(p[1]);
+        if (!started){ g.moveTo(px,py); started = true; } else g.lineTo(px,py);
+      }
+    }
+    g.stroke(); g.setLineDash([]);
+  }
+  g.fillStyle = css("--dot"); g.globalAlpha = 0.6;
+  for (let j=0;j<N;j++){
+    if (j===i) continue;
+    if (Math.abs(PX[j]-cx) > span || Math.abs(PY[j]-cy) > span*0.7) continue;
+    g.beginPath(); g.arc(X(PX[j]), Y(PY[j]), 3, 0, 6.283185); g.fill();
+  }
+  g.globalAlpha = 1;
+  g.fillStyle = css("--ink");
+  g.beginPath(); g.arc(c.width/2, c.height/2, 5.5, 0, 6.283185); g.fill();
+  g.strokeStyle = css("--panel"); g.lineWidth = 1.6; g.stroke();
+  // scale bar: 500 m
+  const bar = 500*s;
+  g.strokeStyle = css("--ink3"); g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(14, c.height-16); g.lineTo(14+bar, c.height-16); g.stroke();
+  g.fillStyle = css("--ink3");
+  g.font = "500 12px 'IBM Plex Mono', monospace";
+  g.fillText("500 m", 16, c.height-24);
+}
+
+document.getElementById("q").addEventListener("input", e => {
+  filter.text = e.target.value.trim().toLowerCase();
+  if (filter.text){
+    filter.colour = filter.animal = null;
+    for (const o of document.querySelectorAll("#cagrid td.on")) o.classList.remove("on");
+  }
+  draw();
+});
+for (const id of ["colourby","lRailOpen","lRailDead","lCanal","lFormer"]){
+  document.getElementById(id).addEventListener("change", draw);
+}
+document.getElementById("reset").addEventListener("click", () => {
+  view.s = view.home.s; view.cx = view.home.cx; view.cy = view.home.cy;
+  filter.colour = filter.animal = null; filter.text = "";
+  document.getElementById("q").value = "";
+  for (const o of document.querySelectorAll("#cagrid td.on")) o.classList.remove("on");
+  draw();
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  draw(); if (selected >= 0) drawCloseup(selected);
+});
+
+fitView();
+draw();
+
+/* open on the most-named pub so the panel is never empty */
+(function seed(){
+  const want = (S.top_names && S.top_names[0]) ? S.top_names[0][0] : null;
+  let i = 0;
+  if (want){ const k = NAMES.indexOf(want); if (k >= 0) i = P.canon.indexOf(k); }
+  if (i >= 0){ selected = i; showDetail(i); draw(); }
+})();
+
+})();
+</script>
+</body>
+</html>
